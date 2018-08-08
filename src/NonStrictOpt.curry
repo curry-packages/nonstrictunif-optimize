@@ -8,16 +8,18 @@
 --- @version January 2006
 ------------------------------------------------------------------------
 
-import Directory(doesFileExist,renameFile)
-import FileGoodies
+import System.Directory   (doesFileExist, renameFile)
+import System.FilePath    (dropExtension)
+import System.IO
+import System.Process     (exitWith)
+import System.Environment (getArgs)
+import Data.List          (intersperse)
+import Data.Maybe         (catMaybes)
+import ReadShowTerm       (showTerm)
+
 import FlatCurry.Types
 import FlatCurry.Files
 import FlatCurry.Read
-import IO
-import List(intersperse)
-import Maybe(catMaybes)
-import ReadShowTerm(showTerm)
-import System
 
 import CurryBrowseAnalysis.Linearity
 import CurryBrowseAnalysis.Dependency
@@ -28,7 +30,7 @@ import CurryBrowseAnalysis.Dependency
 main = do
   args <- getArgs
   case args of
-    [prog] -> optimizeNonstrictEqualityInModuleIfNecessary (stripSuffix prog)
+    [prog] -> optimizeNonstrictEqualityInModuleIfNecessary (dropExtension prog)
     _ -> putStrLn $ "ERROR: Illegal arguments: " ++
                     concat (intersperse " " args) ++ "\n" ++
                     "Usage: OptNonStrict.state <module_name>"
@@ -153,7 +155,7 @@ optimizeExp funinfo@(depinfo,lininfo) (Comb ct f es)
  | otherwise
   = let (cycs,nsus,lnsus,optes) = unzip4 (map (optimizeExp funinfo) es)
     in (or cycs, sum nsus, sum lnsus, Comb ct f optes)
-optimizeExp funinfo (Free vs e) = 
+optimizeExp funinfo (Free vs e) =
   let (cyc,nsu,lnsu,opte) = optimizeExp funinfo e
   in  (cyc,nsu,lnsu,Free vs opte)
 optimizeExp funinfo (Let bs exp) =
@@ -191,4 +193,3 @@ sum = foldl (+) 0
 unzip4              :: [(a,b,c,d)] -> ([a],[b],[c],[d])
 unzip4 []           = ([],[],[],[])
 unzip4 ((x,y,z,v):ts) = (x:xs,y:ys,z:zs,v:vs) where (xs,ys,zs,vs) = unzip4 ts
-
