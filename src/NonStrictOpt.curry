@@ -5,19 +5,21 @@
 --- pattern fp always evaluates to a linear term.
 ---
 --- @author Michael Hanus
---- @version January 2006
+--- @version November 2020
 ------------------------------------------------------------------------
 
-import Directory(doesFileExist,renameFile)
-import FileGoodies
+import Data.List  ( intersperse )
+import Data.Maybe ( catMaybes )
+import System.Environment ( getArgs )
+import System.IO
+
 import FlatCurry.Types
 import FlatCurry.Files
 import FlatCurry.Read
-import IO
-import List(intersperse)
-import Maybe(catMaybes)
-import ReadShowTerm(showTerm)
-import System
+import ReadShowTerm     ( showTerm )
+import System.CurryPath ( stripCurrySuffix )
+import System.Directory ( doesFileExist, renameFile )
+import System.Process   ( exitWith )
 
 import CurryBrowseAnalysis.Linearity
 import CurryBrowseAnalysis.Dependency
@@ -28,10 +30,11 @@ import CurryBrowseAnalysis.Dependency
 main = do
   args <- getArgs
   case args of
-    [prog] -> optimizeNonstrictEqualityInModuleIfNecessary (stripSuffix prog)
-    _ -> putStrLn $ "ERROR: Illegal arguments: " ++
-                    concat (intersperse " " args) ++ "\n" ++
-                    "Usage: OptNonStrict.state <module_name>"
+    [prog] -> optimizeNonstrictEqualityInModuleIfNecessary
+                (stripCurrySuffix prog)
+    _      -> putStrLn $ "ERROR: Illegal arguments: " ++
+                         concat (intersperse " " args) ++ "\n" ++
+                         "Usage: curry-nonstrictopt <module_name>"
 
 optimizeNonstrictEqualityInModuleIfNecessary prog = do
   let progfcy = flatCurryFileName prog
@@ -94,10 +97,10 @@ getCommentString' fh = do
   c <- hGetChar fh
   if c=='}' then return []
             else if c=='-'
-                 then do cs <- getCommentString' fh
-                         return ('-':cs)
-                 else do cs <- getCommentString fh
-                         return ('-':c:cs)
+                   then do cs <- getCommentString' fh
+                           return ('-':cs)
+                   else do cs <- getCommentString fh
+                           return ('-':c:cs)
 
 
 ------------------------------------------------------------------------------
@@ -151,8 +154,8 @@ optimizeExp funinfo@(depinfo,lininfo) (Comb ct f es)
        else (cyclicFP,nsu1+nsu2+1,lnsu1+lnsu2,
              Comb ct ("Prelude","=:<=") [opte1,opte2])
  | otherwise
-  = let (cycs,nsus,lnsus,optes) = unzip4 (map (optimizeExp funinfo) es)
-    in (or cycs, sum nsus, sum lnsus, Comb ct f optes)
+ = let (cycs,nsus,lnsus,optes) = unzip4 (map (optimizeExp funinfo) es)
+   in (or cycs, sum nsus, sum lnsus, Comb ct f optes)
 optimizeExp funinfo (Free vs e) = 
   let (cyc,nsu,lnsu,opte) = optimizeExp funinfo e
   in  (cyc,nsu,lnsu,Free vs opte)
@@ -180,7 +183,7 @@ optimizeExp funinfo (Case ct exp bs) =
 onlyLinearFunctions :: [(QName,Bool)] -> Expr -> Bool
 onlyLinearFunctions li e = all isRightLinearDefined (funcsInExpr e)
  where
-   isRightLinearDefined fun = maybe False id (lookup fun li)
+  isRightLinearDefined fun = maybe False id (lookup fun li)
 
 -- goodies:
 

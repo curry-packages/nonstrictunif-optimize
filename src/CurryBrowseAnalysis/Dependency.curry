@@ -1,7 +1,8 @@
 -----------------------------------------------------------------------------
--- A few base functions for analysing dependencies in FlatCurry programs:
---
--- Michael Hanus, December 2018
+--- A few base functions for analysing dependencies in FlatCurry programs:
+---
+--- @author Michael Hanus
+--- @version November 2020
 -----------------------------------------------------------------------------
 
 module CurryBrowseAnalysis.Dependency
@@ -9,11 +10,11 @@ module CurryBrowseAnalysis.Dependency
                   funcsInExpr, callsDirectly, externalDependent,
                   dependencyGraphs, localDependencyGraphs) where
 
-import Maybe(fromJust)
-import Sort(leqString)
+import Prelude hiding ( empty )
+import Data.Maybe ( fromJust )
 
-import Data.Set.RBTree ( SetRBT, member, empty, insert, toList, union )
 import FlatCurry.Types
+import Data.Set.RBTree ( SetRBT, member, empty, insert, toList, union )
 
 -- Generic global function analysis where the property of each function is a combination
 -- of a property of the function and all its dependent functions.
@@ -150,7 +151,7 @@ emptySet :: SetRBT QName
 emptySet = empty leqQName
 
 leqQName :: QName -> QName -> Bool
-leqQName (m1,n1) (m2,n2) = leqString (m1++('.':n1)) (m2++('.':n2))
+leqQName (m1,n1) (m2,n2) = m1 ++ ('.':n1) <= m2 ++ ('.':n2)
 
 -- end of Dependency
 
