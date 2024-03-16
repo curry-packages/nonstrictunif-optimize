@@ -24,7 +24,7 @@
         "main": "NonStrictOpt"
     },
     "source": {
-        "git": "https://git.ps.informatik.uni-kiel.de/curry-packages/nonstrictunif-optimize.git",
+        "git": "https://github.com/curry-packages/nonstrictunif-optimize.git",
         "tag": "$version"
     }
 }
