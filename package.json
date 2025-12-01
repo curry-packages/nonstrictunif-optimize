@@ -1,6 +1,6 @@
 {
     "name": "nonstrictunif-optimize",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "author": "Michael Hanus <mh@informatik.uni-kiel.de>",
     "synopsis": "Linearity optimizer for functional patterns",
     "category": [ "Optimization" ],
@@ -10,7 +10,7 @@
         "base"         : ">= 3.0.0, < 4.0.0",
         "currypath"    : ">= 3.0.0, < 4.0.0",
         "directory"    : ">= 3.0.0, < 4.0.0",
-        "flatcurry"    : ">= 3.0.0, < 5.0.0",
+        "flatcurry"    : ">= 5.0.0, < 6.0.0",
         "process"      : ">= 3.0.0, < 4.0.0",
         "read-legacy"  : ">= 3.0.0, < 4.0.0",
         "redblacktree" : ">= 3.0.0, < 4.0.0"

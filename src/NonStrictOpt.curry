@@ -161,10 +161,10 @@ optimizeExp funinfo (Free vs e) =
   in  (cyc,nsu,lnsu,Free vs opte)
 optimizeExp funinfo (Let bs exp) =
   let (cyc,nsu,lnsu,optexp) = optimizeExp funinfo exp
-      (bvs,bes) = unzip bs
+      (bvs,bes) = unzip (map (\ (v,tv,be) -> ((v,tv),be)) bs)
       (cycs,nsus,lnsus,optbes) = unzip4 (map (optimizeExp funinfo) bes)
   in (or (cyc:cycs), nsu + sum nsus, lnsu + sum lnsus,
-      Let (zip bvs optbes) optexp)
+      Let (map (\ ((v,tv),be) -> (v,tv,be)) (zip bvs optbes)) optexp)
 optimizeExp funinfo (Or e1 e2) =
   let (cyc1,nsu1,lnsu1,opte1) = optimizeExp funinfo e1
       (cyc2,nsu2,lnsu2,opte2) = optimizeExp funinfo e2

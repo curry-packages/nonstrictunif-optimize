@@ -3,7 +3,7 @@
 --- check whether functions are defined by right-linear rules.
 ---
 --- @author Michael Hanus
---- @version November 2020
+--- @version November 2025
 ------------------------------------------------------------------------------
 
 module CurryBrowseAnalysis.Linearity
@@ -54,18 +54,16 @@ linearVariables (Comb _ f es)
  | otherwise
   = mapM linearVariables es >>= \esvars ->
     let vars = concat esvars
-     in if nub vars == vars
-        then Just vars
-        else Nothing
+    in if nub vars == vars then Just vars
+                           else Nothing
 linearVariables (Free vs e) =
-  linearVariables e >>= \evars -> Just (evars \\ vs)
+  linearVariables e >>= \evars -> Just (evars \\ map fst vs)
 linearVariables (Let bs e) =
-  mapM linearVariables (map snd bs) >>= \bsvars ->
+  mapM linearVariables (expsOfLetBind bs) >>= \bsvars ->
   linearVariables e >>= \evars ->
   let vars = concat (evars : bsvars)
-   in if nub vars == vars
-      then Just (vars \\ (map fst bs))
-      else Nothing
+  in if nub vars == vars then Just (vars \\ (varsOfLetBind bs))
+                         else Nothing
 linearVariables (Or e1 e2) =
   linearVariables e1 >>= \e1vars ->
   linearVariables e2 >>= \e2vars ->
@@ -75,9 +73,8 @@ linearVariables (Case _ e bs) =
   mapM linearVariables (map (\ (Branch _ be) -> be) bs) >>= \bsvars ->
   let vars = foldr union [] (map (\ (branch,bsv) -> bsv \\ patternVars branch)
                                  (zip bs bsvars)) ++ evars
-   in if nub vars == vars
-      then Just vars
-      else Nothing
+  in if nub vars == vars then Just vars
+                         else Nothing
  where
   patternVars (Branch (Pattern _ vs) _) = vs
   patternVars (Branch (LPattern _)   _) = []
